@@ -5,20 +5,25 @@
 #include <GL/glut.h>
 #include "SleepingCatEngine.h"
 #include "CatUserControl.h"
-#include "Cat3DUnit.h"
-#include "Cat3DGeometry.h"
+#include "glm/glm/vec3.hpp"
+#include "glm/glm/vec4.hpp"
+#include "ParticleEffect.h"
+
 
 using namespace std;
 
+extern ParticleEffect Cat_Particle;
 extern CatUserControl Cat_Director_1;
 
 int main(int argc, char** argv) {
 
-  Cat_Director_1.c_circle = new Circle<float>(Cat3DUnit<float>(0,0,0), 4);
-  Cat_Director_1.c_circle->angle = 270;
-  Cat_Director_1.initial_camera_configuration(0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-  cout<<"Presione H para obtener ayuda"<<endl;
+  Cat_Director_1.initial_camera_configuration( glm::vec3(-70.0f, 0.0f,  10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 0.0, 1.0));
+  Cat_Director_1.set_new_ship(); //Creamos la nave del jugador
+  Cat_Particle = ParticleEffect(10);
 
+  //Particle Configurations
+
+  cout<<"Presione H para obtener ayuda"<<endl;
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutInitWindowSize(720, 720);
@@ -26,14 +31,22 @@ int main(int argc, char** argv) {
   glutCreateWindow("Game");
   SCAT_Engine_Init();
 
+  Cat_Particle.SetParticleEmitter(NULL);
+  Cat_Particle.EmitParticles();
+
+
   glutDisplayFunc(SCAT_draw_function);
+  //glutDisplayFunc(SCAT_draw_particle);
   glutReshapeFunc(SCAT_reshape_window);
-  glutKeyboardFunc(SCAT_key_entrance);
+  glutKeyboardFunc(SCAT_key_pressed);
+  glutKeyboardUpFunc(SCAT_key_up);
   glutSpecialFunc(SCAT_special_key_entrance);
+  glutSpecialUpFunc(SCAT_special_key_up);
+  glutMouseFunc(SCAT_mouse_key_entrance);
+  glutPassiveMotionFunc(SCAT_mouse_passive_entrance);
 
   glutIdleFunc(SCAT_idle);
   glutMainLoop();
-  return 0;
+  return EXIT_SUCCESS ;
 }
-
 //------FUNCTION DEVELOPMENT

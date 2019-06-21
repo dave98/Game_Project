@@ -2,115 +2,210 @@
 #define  CATUSERCONTROL_H
 
 #include <iostream>
-#include "Cat3DGeometry.h"
-#include "Cat3DUnit.h"
+#include <vector>
+#include <cmath>
+#include <GL/glut.h>
+#include "glm/glm/glm.hpp "
+#include "glm/glm/vec3.hpp"
+#include "glm/glm/vec2.hpp"
+#include "glm/glm/mat4x4.hpp"
+#include "glm/glm/gtx/rotate_vector.hpp"
+
+#include "Ship.h"
+#include "Obstacles.h"
 
 using namespace std;
 
+//Some global varibles for this document (AND ONLY THIS DOCUMENT)
+float MOUSE_ANGLE = 10.0; //Angulo limite hasta donde puede girar la nave (impide que se voltee completamente)
+float MOUSE_SENSIBILITY = 0.05; //Recepción del mouse frente a los movimientos
+float MOUSE_RELATION = 0.2; //Ni idea de para que sirve pero util
+
 class CatUserControl{
 public:
-  float mouse_x; //Position of mouse
-  float mouse_y;
-  Cat3DUnit<float> camera_position; //Posicion del ojo en el mundo -> DEBE DE SER INICIALIZADO
-  Cat3DUnit<float> camera_reference; //Posicion al punto de referencia de la camara
-  Cat3DUnit<float> camera_up; //Posicion de como apuntas.
+  //Extra implementation
+  glm::mat4 matRoll;  // Gira en torno al eje z
+  glm::mat4 matPitch; // Gira en torno al eje x , lado de las orejas en la imagen
+  glm::mat4 matYaw; // Gira en torno al eje y, frente
+  glm::mat4 resultant_rotate; //Resultante final
+  glm::vec3 eyesPos;
 
 
-  bool mouse_left_down; // Mouse left button down?
-  bool mouse_right_down; // Same up
+  glm::vec3 cam_position;
+  glm::vec3 cam_reference;
+  glm::vec3 cam_normal;
+  glm::vec3 cam_direction; // Define el vector que relaciona la posicion de la camara con su punto de vista
+  glm::vec2 mouse_pos;
+    float mouse_max_angle;
+    float mouse_sensibility;
+    float mouse_relation;
 
-  bool parameter_0; //Draw dona
-  bool parameter_1; //Axis;
-  bool parameter_2; //Cuadrado
-  bool parameter_3; //Cuadrado
-  bool parameter_4; //Cuadrado
-  bool parameter_5; //Cuadrado
-  bool parameter_6; //Cuadrado
-  bool parameter_7; //Cuadrado
-  bool parameter_8; //Cuadrado
-  bool parameter_9; //
-  bool parameter_10;
-  bool parameter_11;
-  bool parameter_12;
-  bool parameter_13; //Cuadrado
-  bool parameter_14; //Cuadrado
-  bool parameter_15; //Cuadrado
-
-  int keys;
-  plane_figure<float>* geometry; // Able to be used with any format
-  Circle<float>* c_circle;
+  vector<bool> all_keys;
+  my_ship* player_ship;
+  vector<obstacles* > game_obstacles;
 
   CatUserControl();
   ~CatUserControl();
 
-  char identifier(char);
-  char keys_interpreter(char);
-  void initial_camera_configuration(float, float, float, float, float, float, float, float, float);//NECESITA DEFINIRSE ANTES DE LA EJECUCION PRINCIPAL
+  void initial_camera_configuration(glm::vec3, glm::vec3, glm::vec3);
+  void set_direction();
 
+  void set_new_ship();
+  void global_rendering();
+
+  void mouse_interpreter(int, int); //Traduce todos los movimientos detectados en SleepingCatEngine
+  void key_interpreter_normal_pressed(int); //Recibe la tecla que se ha presionado y la mantiene en true mientras dure presionada
+  void key_interpreter_normal_up(int); //Pone en false la tecla indicada si se suelta
+  void key_interpreter_special_pressed(int); //Igual que key_interpreter_normal_pressed pero trabaja con las direccionales
+  void key_interpreter_special_up(int); //Igual a key_interpreter_normal_up pero con las direccionales
+  void key_effect_operation(); //Analiza las teclas descritas previamente, y si están en verdadero ejecutan la operacion asociada a ellas
 };
 
 CatUserControl::CatUserControl(){
-  this->mouse_x = 0.0;
-  this->mouse_y = 0.0;
-  this->camera_position = Cat3DUnit<float>(); //Start everything at zero
-  this->camera_reference = Cat3DUnit<float>();
-  this->camera_up = Cat3DUnit<float>();
-  this->mouse_left_down = false;
-  this->mouse_right_down = false;
-  this->keys = 0;
+  this->cam_position = glm::vec3(0);
+  this->cam_reference = glm::vec3(0);
+  this->cam_normal = glm::vec3(0);
+  this->mouse_pos = glm::vec2(0);
+    this->mouse_max_angle = MOUSE_ANGLE;
+    this->mouse_sensibility = MOUSE_SENSIBILITY;
+    this->mouse_relation = MOUSE_RELATION;
+  this->all_keys = vector<bool>(256, false); //Todas las tecals al inicio están desactivadas
 
-  this->parameter_0 = false;
-  this->parameter_1 = false;
-  this->parameter_2 = false;
-  this->parameter_3 = false;
-  this->parameter_4 = false;
-  this->parameter_5 = false;
-  this->parameter_6 = false;
-  this->parameter_7 = false;
-  this->parameter_8 = false;
-  this->parameter_9 = false;
-  this->parameter_10 = false;
-  this->parameter_11 = false;
-  this->parameter_12 = false;
-  this->parameter_13 = false;
-  this->parameter_14 = false;
-  this->parameter_15 = true;
+  this->matRoll = glm::mat4(1.0f);  // Gira en torno al eje z
+  this->matPitch = glm::mat4(1.0f); // Gira en torno al eje x , lado de las orejas en la imagen
+  this->matYaw = glm::mat4(1.0f); // Gira en torno al eje y, frente
+  this->resultant_rotate = glm::mat4(1.0f); //Resultante final
+  this->eyesPos = glm::vec3(0);
 
-
-  this->geometry =  NULL;
-  this->c_circle = NULL;
+//  LAST ATRIBUTTION
+  this->player_ship = NULL;
+  this->game_obstacles = vector<obstacles*>(50, NULL);
+    for(unsigned int i = 0; i < game_obstacles.size(); i++){
+      game_obstacles[i] = new obstacles(0.2, 100);
+    }
 }
+
 
 CatUserControl::~CatUserControl(){}
 
-//Just works for letters
-char CatUserControl::identifier(char _key){
-  if((int)_key >= 97 || (int)_key <= 122){
-      return this->keys_interpreter(_key);
+void CatUserControl::initial_camera_configuration(glm::vec3 _pos, glm::vec3 _ref, glm::vec3 _norm){
+  this->cam_position = _pos;
+  this->cam_reference = _ref;
+  this->cam_normal = _norm;
+}
+
+void CatUserControl::set_new_ship(){
+  this->player_ship = new my_ship; //Creando la nave del jugador
+
+  this->player_ship->set_ship_position(glm::vec3(-20, 0, 0)); //Posicion  de la nave durante la primera iteraccion
+  this->player_ship->set_ship_direction(glm::vec3(0, 0, 0)); //Direccion de la nave durante la primera iteraccion, lo que se envia es el punto a donde apuntaremos inicialmente
+}
+
+void CatUserControl::global_rendering(){ //Funcion que permite renderizar todos los objetos de la pantalla
+  this->player_ship->render_ship();
+  for(unsigned int i = 0; i < this->game_obstacles.size(); i++){
+    this->game_obstacles[i]->render();
   }
-  else{
-    return _key;
+  return;
+}
+
+void CatUserControl::mouse_interpreter(int _x, int _y){
+  float x_diference = fabs(this->mouse_pos.x - _x); //fbas develve el valor absoluto de un flotante (Lo vuelve positivo)
+  float y_diference = fabs(this->mouse_pos.y - _y);
+
+  if(this->mouse_pos.x < _x){ //Se ha movido a la derecha
+    if(this->player_ship->s_rotation.z < this->mouse_max_angle){
+      this->player_ship->s_rotation.z += (x_diference*this->mouse_sensibility);
+      this->player_ship->s_direction.y -= (x_diference*this->mouse_sensibility*this->mouse_relation);
+    }
+  }
+  else if(this->mouse_pos.x > _x){ //Se ha movido a la izquierda
+    if(this->player_ship->s_rotation.z > -this->mouse_max_angle){
+      this->player_ship->s_rotation.z -= (x_diference*this->mouse_sensibility);
+      this->player_ship->s_direction.y += (x_diference*this->mouse_sensibility*this->mouse_relation);
+    }
+  }
+
+  if(this->mouse_pos.y < _y){ //Se ha movido a abajo
+    if(this->player_ship->s_rotation.y < this->mouse_max_angle){
+      this->player_ship->s_rotation.y += (y_diference*this->mouse_sensibility);
+      this->player_ship->s_direction.z -= (y_diference*this->mouse_sensibility*this->mouse_relation);
+    }
+  }
+  else if(this->mouse_pos.y > _y){ //Se ha movido para arriba
+    if(this->player_ship->s_rotation.y > -this->mouse_max_angle){
+      this->player_ship->s_rotation.y -= (y_diference*this->mouse_sensibility);
+      this->player_ship->s_direction.z += (y_diference*this->mouse_sensibility*this->mouse_relation);
+    }
+  }
+
+  this->mouse_pos.x = _x;
+  this->mouse_pos.y = _y;
+  return;
+
+}
+
+void CatUserControl::key_interpreter_normal_pressed(int key){ //Recibe la tecla que se ha presionado y la mantiene en true mientras dure presionada
+  this->all_keys[key] = true;
+}
+
+void CatUserControl::key_interpreter_normal_up(int key){ //Pone en false la tecla indicada si se suelta
+  this->all_keys[key] = false;
+}
+
+void CatUserControl::key_interpreter_special_pressed(int key){ //Igual que key_interpreter_normal_pressed pero trabaja con las direccionales
+  switch (key) {
+    case GLUT_KEY_UP:
+      this->all_keys[(int)'w'] = true;
+      break;
+    case GLUT_KEY_DOWN:
+      this->all_keys[(int)'s'] = true;
+      break;
+    case GLUT_KEY_LEFT:
+      this->all_keys[(int)'a'] = true;
+      break;
+    case GLUT_KEY_RIGHT:
+      this->all_keys[(int)'d'] = true;
+      break;
   }
 }
 
-char CatUserControl::keys_interpreter(char _key){
-    cout<<"Entrada: "<<(char)_key<<endl;
-    cout<<"Salida: "<<(char)(_key - 32)<<endl;
-    return (_key - 32);
+void CatUserControl::key_interpreter_special_up(int key){ //Igual a key_interpreter_normal_up pero con las direccionales
+  switch (key) {
+    case GLUT_KEY_UP:
+      this->all_keys[(int)'w'] = false;
+      break;
+    case GLUT_KEY_DOWN:
+      this->all_keys[(int)'s'] = false;
+      break;
+    case GLUT_KEY_LEFT:
+      this->all_keys[(int)'a'] = false;
+      break;
+    case GLUT_KEY_RIGHT:
+      this->all_keys[(int)'d'] = false;
+      break;
+  }
 }
 
-void CatUserControl::initial_camera_configuration(float pos_x, float pos_y, float pos_z, float ref_x, float ref_y, float ref_z, float vec_x, float vec_y, float vec_z){
-  this->camera_position.x = pos_x;
-  this->camera_position.y = pos_y;
-  this->camera_position.z = pos_z;
+void CatUserControl::key_effect_operation(){
+    if(this->all_keys[(int)'w']){
+      this->player_ship->ship_movement_up();
+    }
 
-  this->camera_reference.x = ref_x;
-  this->camera_reference.y = ref_y;
-  this->camera_reference.z = ref_z;
+    if(this->all_keys[(int)'s']){
+      this->player_ship->ship_movement_down();
+    }
 
-  this->camera_up.x = vec_x;
-  this->camera_up.y = vec_y;
-  this->camera_up.z = vec_z;
+    if(this->all_keys[(int)'a']){
+      this->player_ship->ship_movement_left();
+    }
+
+    if(this->all_keys[(int)'d']){
+      this->player_ship->ship_movemente_right();
+    }
+
 }
+
+
 
 #endif
