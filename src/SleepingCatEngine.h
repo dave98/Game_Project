@@ -174,7 +174,7 @@ void SCAT_draw_function(void){
                                                         //GL_DEPTH_BUFFER_COLOR no sé pa que sirve
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(30.0f, g_aspect, 1.0f, 1000.0f);
+    gluPerspective(30.0f, g_aspect, 1.0f, 2000.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 

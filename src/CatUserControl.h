@@ -25,10 +25,8 @@ float MOUSE_ANGLE = 15.0; //Angulo limite hasta donde puede girar la nave (impid
 float MOUSE_SENSIBILITY = 0.05; //Recepción del mouse frente a los movimientos
 float MOUSE_RELATION = 0.2; //Ni idea de para que sirve pero util
 
-int NUMERO_METEORITOS = 50;
+int NUMERO_METEORITOS = 15;
 int NUMERO_ENEMIES_1 = 1;
-
-
 
 class CatUserControl{
 public:
@@ -99,7 +97,7 @@ CatUserControl::CatUserControl(){
   this->player_ship = NULL;
   this->game_obstacles = vector<obstacles*>(NUMERO_METEORITOS, NULL);
     for(unsigned int i = 0; i < game_obstacles.size(); i++){
-      game_obstacles[i] = new obstacles(0.2, 100);
+      game_obstacles[i] = new obstacles(1, 100);
     }
 
 //Inicializando modelos
@@ -142,7 +140,7 @@ void CatUserControl::global_rendering(){ //Funcion que permite renderizar todos 
   for(unsigned int i = 0; i < this->game_obstacles.size(); i++){
     this->game_obstacles[i]->render();
   }
-  this->global_enemy_rendering();
+  //this->global_enemy_rendering();
   return;
 }
 
