@@ -1,0 +1,1 @@
+g++: error: ../imported_biblios/glut32.lib: No such file or directory

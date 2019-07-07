@@ -1,5 +1,0 @@
-Compilar bajo los flags:
-
--std=c++11 soil/SOIL.lib -lglu32 -lopengl32 /glut32.lib
-
-El sistema de partículas iniciará automáticamente 

@@ -3,11 +3,23 @@
 #include <windows.h>
 #include <math.h>
 #include <GL/glut.h>
-#include "SleepingCatEngine.h"
-#include "CatUserControl.h"
-#include "glm/glm/vec3.hpp"
-#include "glm/glm/vec4.hpp"
-#include "ParticleEffect.h"
+#include "src/SleepingCatEngine.h"
+#include "src/CatUserControl.h"
+#include "src/glm/glm/vec3.hpp"
+#include "src/glm/glm/vec4.hpp"
+#include "src/ParticleEffect.h"
+
+//SCREEN CONFIGURATION
+
+// X = 0
+//               Z
+//  -------------------------------
+//  |            10               | 
+//  |                             |
+//  |10                        -10|  Y
+//  |                             |
+//  |           -10               |
+//  -------------------------------
 
 
 using namespace std;
@@ -25,11 +37,12 @@ int main(int argc, char** argv) {
 
   cout<<"Presione H para obtener ayuda"<<endl;
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-  glutInitWindowSize(720, 720);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitWindowSize(1440, 720);
   glutInitWindowPosition(0, 0);
   glutCreateWindow("Game");
-  SCAT_Engine_Init();
+  //SCAT_Engine_Init();
+  SCAT_Engine_Altered();
 
   Cat_Particle.SetParticleEmitter(NULL);
   Cat_Particle.EmitParticles();
